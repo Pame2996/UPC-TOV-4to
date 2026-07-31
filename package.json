@@ -1,0 +1,21 @@
+{
+  "name": "playwright---rmd",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test:cucumber": "cucumber-js --require-module ts-node/register --require src/test/steps --require src/hooks --format html:test-result/report/cucumber-report.html --format json:test-result/report/cucumber-report.json src/test/features"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.1.0",
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.1",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

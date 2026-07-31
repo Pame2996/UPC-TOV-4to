@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",                // Versión de JS a compilar
+    "module": "CommonJS",              // Sistema de módulos compatible con Node.js
+    "moduleResolution": "node",
+    "esModuleInterop": true,           // Para compatibilidad con imports comunes
+    "allowJs": true,
+    "outDir": "./dist",                // Carpeta para código compilado (puedes cambiarla)
+    "rootDir": "./src",                // Carpeta con tu código fuente TS
+    "strict": true,                   // Chequeos estrictos de TS
+    "skipLibCheck": true
+  },
+  "include": ["src", "tests", "hooks"],  // Ajusta según dónde tengas tus archivos .ts
+  "exclude": ["node_modules", "dist"]
+}
