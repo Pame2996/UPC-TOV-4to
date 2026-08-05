@@ -26,7 +26,7 @@ export class Login extends BasePage{
 
     async navigate(){
         //await this.navigateTo('https://colegios-prospeccion-fe-cert-upn.stage02.link/');
-        await this.page.goto('https://decidetufuturo.upc.edu.pe/', {
+        await this.page.goto('https://colegios-prospeccion-fe-cert-upc.stage02.link/', {
             waitUntil: "domcontentloaded"
         });
 

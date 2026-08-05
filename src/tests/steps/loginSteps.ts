@@ -15,7 +15,7 @@ let realizarTOVPage2: RealizaTOVRiasec;
 let realizarTOVPage3: RealizaTOVVocare;
 let verResultados: ValidaCarreras;
 
-const dni = "31072601";
+const dni = "84172000";
 
 Given('el usuario se encuentra en la página de inicio',async function(){
     loginPage = new Login(pageFixture.page);
@@ -39,17 +39,26 @@ When('da clic en Continuar',async function(){
     await loginPage.continuarButtonP();
 });
 
-Then('realiza el Test',async function(){
+Then('inicia el test de personalidad',async function(){
     realizarTOVPage = new RealizaTOVBigFive(pageFixture.page);
     await realizarTOVPage.iniciarTest();
     //await realizarTOVPage.responderPersonalidad(dni);
+});
+
+Then('responde el test de Riasec',async function(){
     realizarTOVPage2 = new RealizaTOVRiasec(pageFixture.page);
     await realizarTOVPage2.responderIntereses(dni);
+});
+
+Then('responde el test de Vocare',async function(){
     realizarTOVPage3 = new RealizaTOVVocare(pageFixture.page);
     await realizarTOVPage3.responderHabilidades(dni);
+});
+
+Then('visualiza y valida los resultados de carreras',async function(){
     verResultados = new ValidaCarreras(pageFixture.page);
     //1: Quinto
-    //2: Cuarto 
+    //2: Cuarto
     await verResultados.visualizarResultados("2");
     await verResultados.verCarreras(dni);
-}); 
+});
