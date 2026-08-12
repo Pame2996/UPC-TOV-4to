@@ -4,6 +4,7 @@ import {Login} from './loginPage';
 import { expect } from "@playwright/test";
 import path from "path";
 import { leerCarreras } from "../utils/leerExcel";
+import { getTestDataFile } from "../utils/config";
 import { Console } from "console";
 
 export class ValidaCarreras extends BasePage{
@@ -82,7 +83,7 @@ export class ValidaCarreras extends BasePage{
         await this.page.waitForSelector('li.carousel-item h2', { timeout: 10000 });
 
         const carrerasExcel = leerCarreras({
-            filePath: "src/tests/data/Carreras_1.xlsx",
+            filePath: path.join("src/tests/data", getTestDataFile()),
             sheetName: "Carreras",
             colTitulo: "Titulo",
         });

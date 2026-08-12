@@ -1,45 +1,45 @@
 import {Given,When,Then} from '@cucumber/cucumber';
-import {chromium,Browser,Page,expect} from '@playwright/test';
 import {pageFixture} from '../../hooks/pageFixture';
 import {Registrate} from '../pages/registratePage';
-import { generateUserData } from "../utils/dataGenerator";
+import { generateUserData, appendTestData } from "../utils/dataGenerator";
 
-let browser : Browser;
 let registratePage: Registrate;
-let page: Page;
 
-Given('el usuario ingresa a la página principal de UPN',async function(){
+Given('el usuario ingresa a la página principal de UPC', async function () {
     registratePage = new Registrate(pageFixture.page);
     await registratePage.navigate();
+    appendTestData(`\n==== Ejecución ${new Date().toISOString()} ====\nURL: ${pageFixture.page.url()}`);
 });
 
-When('el usuario da clic en Regístrate',async function(){
-    await registratePage.clickRegistrate();
+When('el usuario da clic en Registrarme', async function () {
+    await registratePage.clickRegistrarme();
 });
 
-When('el usuario ingresa sus datos personales',async function(){
-    const user = generateUserData();    
-    await registratePage.enterData(
-    user.documentType,
-    user.documentNumber,
-    user.names,
-    user.lastName1,
-    user.lastName2,
-    user.birthDate,
-    user.phone,
-    user.email,
-    user.colegio,
-    user.grado,
-    user.carrera,
-    user.campus
-    );
+When('el usuario selecciona el colegio con código {string}', async function (codigo: string) {
+    await registratePage.selectSchool(codigo);
+    appendTestData(`Colegio (código): ${codigo}`);
 });
 
-When('el usuario da clic en Continuar',async function(){
-    await registratePage.continueButtonP();
+When('el usuario selecciona el grado {string}', async function (grado: string) {
+    await registratePage.selectGrade(grado);
+    appendTestData(`Grado: ${grado}`);
 });
 
-Then('se muestra pantalla de TOV',async function() {
-    await registratePage.validarDimensiones();
-    console.log("ESTO ES UN ÉXITO");
-})
+When('el usuario selecciona la opción {string} en la pantalla Dónde estás tú', async function (posicion: string) {
+    await registratePage.selectDondeEstasTu(posicion);
+    appendTestData(`Dónde estás tú (opción): ${posicion}`);
+});
+
+When('el usuario da clic en Continuar', async function () {
+    await registratePage.clickContinuar();
+});
+
+When('el usuario ingresa sus datos personales con tipo de documento {string}', async function (tipoDocumento: string) {
+    const datos = generateUserData();
+    datos.tipoDocumento = tipoDocumento;
+    await registratePage.enterDatosPersonales(datos);
+});
+
+Then('se completa el registro y avanza a la siguiente pantalla', async function () {
+    await registratePage.validarRegistroCompletado();
+});

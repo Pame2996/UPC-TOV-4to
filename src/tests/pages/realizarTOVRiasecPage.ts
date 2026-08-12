@@ -4,6 +4,7 @@ import {Login} from './loginPage';
 import { expect } from "@playwright/test";
 import path from "path";
 import { leerPreguntasConOpcion } from "../utils/leerExcel";
+import { getTestDataFile } from "../utils/config";
 
 export class RealizaTOVRiasec extends BasePage{
     private readonly loginPage: Login;
@@ -27,7 +28,7 @@ export class RealizaTOVRiasec extends BasePage{
 
     async responderIntereses(dni:string){
         await this.page.waitForTimeout(2000);
-        const filePath = path.resolve(process.cwd(), "src/tests/data/Carreras_1.xlsx");
+        const filePath = path.resolve(process.cwd(), "src/tests/data", getTestDataFile());
         const filasExcel = leerPreguntasConOpcion({
             filePath,
             sheetName: "Riasec",

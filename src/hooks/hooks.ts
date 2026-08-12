@@ -11,7 +11,9 @@ let page: Page;
 setDefaultTimeout(180000);
 
 BeforeAll(async function () {
-  browser = await chromium.launch({ headless: false });
+  // En CI (GitHub Actions setea CI=true automáticamente) no hay pantalla disponible,
+  // así que corre headless ahí; localmente se sigue viendo el navegador como siempre.
+  browser = await chromium.launch({ headless: !!process.env.CI });
   //browser = await webkit.launch({headless:false});
 });
 
@@ -44,7 +46,7 @@ After(async function (this: any, { pickle, result }: ITestCaseHookParameter) {
 });
 
 AfterStep(async function (this: any, { pickle, result }: ITestCaseHookParameter){
-    await page.waitForLoadState("networkidle");  
+    await page.waitForLoadState("domcontentloaded");
     const screenshotDir = "./test-result/screenshots";
       if (!fs.existsSync(screenshotDir)) {
         fs.mkdirSync(screenshotDir, { recursive: true });

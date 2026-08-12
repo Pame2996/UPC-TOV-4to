@@ -15,7 +15,8 @@ let realizarTOVPage2: RealizaTOVRiasec;
 let realizarTOVPage3: RealizaTOVVocare;
 let verResultados: ValidaCarreras;
 
-const dni = "84172000";
+let dni: string;
+let seccion: string;
 
 Given('el usuario se encuentra en la página de inicio',async function(){
     loginPage = new Login(pageFixture.page);
@@ -26,8 +27,10 @@ When('ingresa a la opcion Ya tengo cuenta',async function(){
     await loginPage.iniciarButtonP();
 });
 
-When('ingresa el DNI',async function(){
-    await loginPage.seleccionarTipo("DNI");
+When('ingresa el DNI {string} de la seccion {string} con tipo de documento {string}',async function(dniParam:string, seccionParam:string, tipoDocumento:string){
+    dni = dniParam;
+    seccion = seccionParam;
+    await loginPage.seleccionarTipo(tipoDocumento);
     await loginPage.ingresarDocumento(dni);
 });
 
@@ -42,7 +45,9 @@ When('da clic en Continuar',async function(){
 Then('inicia el test de personalidad',async function(){
     realizarTOVPage = new RealizaTOVBigFive(pageFixture.page);
     await realizarTOVPage.iniciarTest();
-    //await realizarTOVPage.responderPersonalidad(dni);
+    if (seccion === '5to') {
+        await realizarTOVPage.responderPersonalidad(dni);
+    }
 });
 
 Then('responde el test de Riasec',async function(){
@@ -57,8 +62,12 @@ Then('responde el test de Vocare',async function(){
 
 Then('visualiza y valida los resultados de carreras',async function(){
     verResultados = new ValidaCarreras(pageFixture.page);
-    //1: Quinto
-    //2: Cuarto
-    await verResultados.visualizarResultados("2");
+    let grado: string;
+    if (seccion === '5to') {
+        grado = '1'; // Quinto
+    } else {
+        grado = '2'; // Cuarto
+    }
+    await verResultados.visualizarResultados(grado);
     await verResultados.verCarreras(dni);
 });

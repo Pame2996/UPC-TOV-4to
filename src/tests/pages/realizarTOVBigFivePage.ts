@@ -5,6 +5,7 @@ import { expect } from "@playwright/test";
 import {PREGUNTAS_PERSONALIDAD} from "../utils/dataPreguntas";
 import path from "path";
 import { leerPreguntasConOpcion } from "../utils/leerExcel";
+import { getTestDataFile } from "../utils/config";
 
 export class RealizaTOVBigFive extends BasePage{
     private readonly registratePage: Registrate;
@@ -35,7 +36,7 @@ export class RealizaTOVBigFive extends BasePage{
     }
 
     async responderPersonalidad(dni:string){
-        const filePath = path.resolve(process.cwd(), "src/tests/data/Carreras_1.xlsx");
+        const filePath = path.resolve(process.cwd(), "src/tests/data", getTestDataFile());
         const filasExcel = leerPreguntasConOpcion({
             filePath,
             sheetName: "BigFive",
@@ -105,7 +106,7 @@ export class RealizaTOVBigFive extends BasePage{
             if(i===25){
                 console.log("ENTRÉ AL i=25");
                 await this.waitForElementVisible(this.continuarModal);
-                this.clickElement(this.continuarModal);
+                await this.clickElement(this.continuarModal);
             }
         }
         

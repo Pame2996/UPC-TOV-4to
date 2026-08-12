@@ -1,131 +1,119 @@
-import {Page,Locator, FrameLocator} from "playwright/test";
+import {Page,Locator} from "playwright/test";
 import BasePage from './basePage';
+import { expect } from "@playwright/test";
+import { UserData } from "../utils/dataGenerator";
+import { getBaseUrl } from "../utils/config";
 
 export class Registrate extends BasePage{
     readonly page:Page;
-    private readonly registrateButton: Locator;
-    private readonly documentType: Locator;
-    private readonly documentTypeButton: Locator;
-    private readonly documentNumber: Locator;
-    private readonly nameInput: Locator;
-    private readonly firstLastNameInput: Locator;
-    private readonly secondLastNameInput: Locator;
-    private readonly birthDayInput: Locator;
-    private readonly phoneNumberInput: Locator;
-    private readonly emailInput: Locator;
+    private readonly registrarmeButton: Locator;
     private readonly schoolInput: Locator;
-    private readonly schoolButton: Locator;
-    private readonly schoolOptions: Locator;
-    private readonly grade: Locator;
-    private readonly gradeButton: Locator;
-    private readonly careerInput: Locator;
-    private readonly careerButton: Locator;
-    private readonly careerOptions: Locator;
-    private readonly campus: Locator;
-    private readonly campusButton: Locator;
-    private readonly continueButton: Locator;
-    private readonly firstCheck: Locator;
-    private readonly resultadosButton: Locator;
+    private readonly gradeInput: Locator;
+    private readonly continuarButton: Locator;
+    private readonly dondeEstasTuOptions: Locator;
+    private readonly firstNameInput: Locator;
+    private readonly firstSurnameInput: Locator;
+    private readonly secondSurnameInput: Locator;
+    private readonly birthdateInput: Locator;
+    private readonly phoneInput: Locator;
+    private readonly emailInput: Locator;
+    private readonly documentTypeInput: Locator;
+    private readonly documentNumberInput: Locator;
+    private readonly consentCheckbox: Locator;
 
     constructor(page:Page){
         super(page)
-        this.page=page;
-        this.registrateButton = page.getByRole('button', { name: 'Regístrate' });
-        this.documentType = page.locator("#document_type");
-        this.documentTypeButton = this.documentType.getByRole("button");
-        this.documentNumber = page.locator("#document_number");
-        this.nameInput = page.locator("#nombres");
-        this.firstLastNameInput = page.locator("#primer_apellido");
-        this.secondLastNameInput = page.locator("#segundo_apellido");
-        this.birthDayInput = page.locator("#fecha_nacimiento");
-        this.phoneNumberInput = page.locator("#celular");
-        this.emailInput = page.locator("#correo");
-        this.schoolInput = page.locator("#colegio");
-        this.schoolButton = this.schoolInput.locator('input[placeholder="Ingresa tu colegio"]');
-        this.schoolOptions = this.schoolInput.locator("li.lau-core-searchable-input__option");
-        this.grade = page.locator("#grado");
-        this.gradeButton = this.grade.getByRole("button");
-        this.careerInput = page.locator("#carrera");
-        this.careerButton = this.careerInput.locator('input[placeholder="Busca una carrera"]');
-        this.careerOptions = this.careerInput.locator("li.lau-core-searchable-input__option");
-        this.campus = page.locator("#campus");
-        this.campusButton = this.campus.getByRole("button");
-        this.continueButton = page.getByRole("button", { name: "Continuar" });
-        this.firstCheck = page.locator('input[type="checkbox"]').nth(0);
-        this.resultadosButton = page.getByRole("button",{name: "Ver resultados"});
+        this.page = page;
+        this.registrarmeButton = page.getByRole('button', { name: 'Registrarme' });
+        this.schoolInput = page.locator('#school');
+        this.gradeInput = page.locator('#what_grade_are_you');
+        this.continuarButton = page.getByRole('button', { name: 'Continuar', exact: true });
+        this.dondeEstasTuOptions = page.getByRole('listitem').locator('article');
+        this.firstNameInput = page.locator('#first_name');
+        this.firstSurnameInput = page.locator('#first_surname');
+        this.secondSurnameInput = page.locator('#second_surname');
+        this.birthdateInput = page.locator('#birthdate');
+        this.phoneInput = page.locator('#phone');
+        this.emailInput = page.locator('#email');
+        this.documentTypeInput = page.locator('#document_type');
+        this.documentNumberInput = page.locator('#document_number');
+        this.consentCheckbox = page.locator('input[type="checkbox"]').first();
     }
 
     async navigate(){
-        await this.navigateTo('https://colegios-prospeccion-fe-cert-upn.stage02.link/');
+        await this.page.goto(`${getBaseUrl('cert')}/`, {
+            waitUntil: "domcontentloaded"
+        });
     }
 
-    async clickRegistrate(){
-        await this.waitForElementVisible(this.registrateButton);
-        await this.clickElement(this.registrateButton);
+    async clickRegistrarme(){
+        await this.waitForElementVisible(this.registrarmeButton);
+        await this.registrarmeButton.scrollIntoViewIfNeeded();
+        await this.registrarmeButton.click();
+        await expect(this.schoolInput).toBeVisible({ timeout: 15000 });
     }
 
-    async selectDocumentType(option:string){
-        await this.clickElement(this.documentTypeButton);
-        const listbox = this.documentType.getByRole("listbox");
-        await this.waitForElementVisible(listbox);
-        await this.clickElement(listbox.getByRole('option', { name: option, exact: true }));
+    async selectSchool(codigo: string){
+        await this.fillFormField(this.schoolInput, codigo);
+        // La búsqueda de colegio demora en cargar el resultado
+        const option = this.page.getByRole('listitem').first();
+        await this.waitForElementVisible(option);
+        await this.clickElement(option);
     }
 
-    async selectSchool(option:string){
-        await this.clickElement(this.schoolButton);
-        await this.fillFormField(this.schoolButton,option);
-        const listbox = this.page.getByRole("listbox");
-        const list = this.schoolOptions.filter({ hasText: new RegExp(`^\\s*${option}\\s*-`) }).first();
-        await this.waitForElementVisible(list);
-        await this.clickElement(list);
+    async selectGrade(grado: string){
+        await this.clickElement(this.gradeInput);
+        const option = this.page.getByRole('listitem').filter({ hasText: grado }).first();
+        await this.waitForElementVisible(option);
+        await this.clickElement(option);
     }
 
-    async selectGrade(option:string){
-        await this.clickElement(this.gradeButton);
-        const listbox = this.grade.getByRole("listbox");
-        await this.waitForElementVisible(listbox);
-        await this.clickElement(listbox.getByRole('option',{name:option,exact:true}));
+    async selectDondeEstasTu(posicion: string){
+        // Se parametriza por posición (1 = primera opción) porque el texto de las
+        // opciones incluye comillas dobles que rompen el parseo de steps con {string}
+        const option = this.dondeEstasTuOptions.nth(Number(posicion) - 1);
+        await this.waitForElementVisible(option);
+        await this.clickElement(option);
     }
 
-    async selectCareer(option:string){
-        await this.clickElement(this.careerButton);
-        await this.fillFormField(this.careerButton,option);
-        const listbox = this.page.getByRole("listbox");
-        const list = this.careerOptions.filter({ hasText: new RegExp(option.replace(/\s+/g, "\\s+"), "i") }).first(); 
-        await this.waitForElementVisible(list);
-        await this.clickElement(list);
+    async selectDocumentType(tipo: string){
+        await this.clickElement(this.documentTypeInput);
+        const option = this.page.getByRole('listitem').filter({ hasText: tipo }).first();
+        await this.waitForElementVisible(option);
+        await this.clickElement(option);
     }
 
-    async selectCampus(option:string){
-        await this.clickElement(this.campusButton);
-        const listbox = this.campus.getByRole("listbox");
-        await this.waitForElementVisible(listbox);
-        await this.clickElement(listbox.getByRole('option',{name:option,exact:true}));
+    async enterDatosPersonales(datos: UserData){
+        await this.fillFormField(this.firstNameInput, datos.primerNombre);
+        await this.fillFormField(this.firstSurnameInput, datos.primerApellido);
+        await this.fillFormField(this.secondSurnameInput, datos.segundoApellido);
+        await this.fillFormField(this.birthdateInput, datos.fechaNacimiento);
+        await this.fillFormField(this.phoneInput, datos.celular);
+        await this.fillFormField(this.emailInput, datos.correo);
+        await this.selectDocumentType(datos.tipoDocumento);
+        await this.fillFormField(this.documentNumberInput, datos.numeroDocumento);
+        await this.clickElement(this.consentCheckbox);
     }
 
-    async enterData(docType:string,docNumber:string,nombre:string,apellidoPaterno:string,apellidoMaterno:string,cumple:string,
-                    celular:string,correo:string,colegio:string,grado:string,carrera:string,campus:string
-    ){
-        await this.selectDocumentType(docType);
-        await this.fillFormField(this.documentNumber,docNumber);
-        await this.fillFormField(this.nameInput,nombre);
-        await this.fillFormField(this.firstLastNameInput,apellidoPaterno);
-        await this.fillFormField(this.secondLastNameInput,apellidoMaterno);
-        await this.fillFormField(this.birthDayInput,cumple);
-        await this.fillFormField(this.phoneNumberInput,celular);
-        await this.fillFormField(this.emailInput,correo);
-        await this.selectSchool(colegio);
-        await this.selectGrade(grado);
-        await this.selectCareer(carrera);
-        await this.selectCampus(campus);
-        await this.clickElement(this.firstCheck);
+    async clickContinuar(){
+        const currentPath = new URL(this.page.url()).pathname;
+        let waitCondition: RegExp | ((url: URL) => boolean);
+
+        if (currentPath.endsWith('/registro')) {
+            waitCondition = /\/registro\/donde-estas-tu/;
+        } else if (currentPath.endsWith('/donde-estas-tu')) {
+            waitCondition = /\/registro\/datos-personales/;
+        } else {
+            waitCondition = (url: URL) => !url.pathname.endsWith('/datos-personales');
+        }
+
+        await Promise.all([
+            this.page.waitForURL(waitCondition, { timeout: 30000 }),
+            this.continuarButton.click(),
+        ]);
     }
 
-    async continueButtonP(){
-        await this.clickElement(this.continueButton);
-    }
-
-    async validarDimensiones(){
-        await this.waitForElementVisible(this.resultadosButton);
+    async validarRegistroCompletado(){
+        await expect(this.page).not.toHaveURL(/\/registro\/datos-personales/, { timeout: 15000 });
     }
 }

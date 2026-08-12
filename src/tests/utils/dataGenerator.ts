@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 export const FIRST_NAMES = [
-    "María"
+    "Prueba"
 ];
 
 export const SURNAMES = [
@@ -19,58 +19,68 @@ function randomFrom(list: string[]) {
     return list[Math.floor(Math.random() * list.length)];
 }
 
+function randomFechaNacimiento(): string {
+    const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
+    const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, "0");
+    return `${day}/${month}/2007`;
+}
+
 export interface UserData {
-    documentType: string;
-    documentNumber: string;
-    names: string;
-    lastName1: string;
-    lastName2: string;
-    birthDate: string;
-    phone: string;
-    email: string;
-    colegio: string;
-    grado: string;
-    carrera: string;
-    campus: string;
+    primerNombre: string;
+    primerApellido: string;
+    segundoApellido: string;
+    fechaNacimiento: string;
+    celular: string;
+    correo: string;
+    tipoDocumento: string;
+    numeroDocumento: string;
+}
+
+export function appendTestData(texto: string) {
+    const filePath = path.join(process.cwd(), "test-data.txt");
+    fs.appendFileSync(filePath, texto + "\n");
 }
 
 export function generateUserData(): UserData {
     const random = Math.floor(Math.random() * 90000000 + 10000000);
 
     const data: UserData = {
-        documentType: "DNI",
-        documentNumber: random.toString(),
-        names: randomFrom(FIRST_NAMES),
-        lastName1: randomFrom(SURNAMES),
-        lastName2: randomFrom(SURNAMES),
-        birthDate: "04/02/2000",
-        phone: "9" + Math.floor(Math.random() * 90000000 + 10000000),
-        email: `test_${random}@mail.com`,
-        colegio: "1570803",
-        grado: "Grado 10 o 4to de secundaria",
-        carrera: "INGENIERIA EMPRESARIAL",
-        campus: "Lima Ate"
+        primerNombre: randomFrom(FIRST_NAMES),
+        primerApellido: randomFrom(SURNAMES),
+        segundoApellido: randomFrom(SURNAMES),
+        fechaNacimiento: randomFechaNacimiento(),
+        celular: "9" + Math.floor(Math.random() * 90000000 + 10000000),
+        correo: `test_${random}@mail.com`,
+        tipoDocumento: "DNI",
+        numeroDocumento: random.toString(),
     };
     saveToTxt(data);
     return data;
 }
 
+export interface ApoderadoData {
+    nombre: string;
+    celular: string;
+}
+
+export function generateApoderadoData(): ApoderadoData {
+    const data: ApoderadoData = {
+        nombre: `${randomFrom(FIRST_NAMES)} ${randomFrom(SURNAMES)}`,
+        celular: "9" + Math.floor(Math.random() * 90000000 + 10000000),
+    };
+    appendTestData(
+        `Apoderado: ${data.nombre}\n` +
+        `Celular apoderado: ${data.celular}`
+    );
+    return data;
+}
+
 function saveToTxt(data: UserData) {
-    const filePath = path.join(process.cwd(), "test-data.txt");
-
-    const content = `
-    ==== Test Execution ====
-    Documento: ${data.documentType} - ${data.documentNumber}
-    Nombre: ${data.names} ${data.lastName1} ${data.lastName2}
-    Nacimiento: ${data.birthDate}
-    Celular: ${data.phone}
-    Correo: ${data.email}
-    Colegio: ${data.colegio}
-    Grado: ${data.grado}
-    Carrera: ${data.carrera}
-    Campus: ${data.campus}
-    -------------------------
-    `;
-
-    fs.appendFileSync(filePath, content);
+    appendTestData(
+        `Nombre: ${data.primerNombre} ${data.primerApellido} ${data.segundoApellido}\n` +
+        `Nacimiento: ${data.fechaNacimiento}\n` +
+        `Celular: ${data.celular}\n` +
+        `Correo: ${data.correo}\n` +
+        `Documento: ${data.tipoDocumento} - ${data.numeroDocumento}`
+    );
 }

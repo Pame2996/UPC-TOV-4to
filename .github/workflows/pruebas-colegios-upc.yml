@@ -1,0 +1,75 @@
+name: Pruebas Colegios UPC
+
+on:
+  workflow_dispatch:
+    inputs:
+      flujo:
+        description: "Flujo a ejecutar"
+        required: true
+        type: choice
+        default: registro
+        options:
+          - registro
+          - login
+          - registromastov
+          - registropretov
+          - fichafisica
+      tags:
+        description: 'Filtro de tags (ej. "@4to", "@5to", "@egresado"). Vacío = corre todos los casos del flujo.'
+        required: false
+        type: string
+        default: ""
+      ambiente:
+        description: "Ambiente contra el que corre (TEST_ENV)"
+        required: true
+        type: choice
+        default: cert
+        options:
+          - cert
+          - dev
+          - prod
+      archivo_datos:
+        description: "Archivo Excel de datos/respuestas (TEST_DATA_FILE)"
+        required: false
+        type: string
+        default: "Carreras_1.xlsx"
+
+jobs:
+  ejecutar-pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar navegador de Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar pruebas
+        env:
+          TEST_ENV: ${{ inputs.ambiente }}
+          TEST_DATA_FILE: ${{ inputs.archivo_datos }}
+        run: |
+          if [ -n "${{ inputs.tags }}" ]; then
+            npx cucumber-js --profile ${{ inputs.flujo }} --tags "${{ inputs.tags }}"
+          else
+            npx cucumber-js --profile ${{ inputs.flujo }}
+          fi
+
+      - name: Subir reporte y capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultado-pruebas-${{ inputs.flujo }}
+          path: |
+            test-result/
+            test-data.txt
+          retention-days: 14

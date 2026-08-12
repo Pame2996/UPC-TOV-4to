@@ -6,3 +6,5 @@ node_modules/
 /test-result/
 /screenshots/
 ~$*.xlsx
+/.playwright-mcp/
+/test-data.txt
