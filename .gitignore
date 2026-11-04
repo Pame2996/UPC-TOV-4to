@@ -8,3 +8,4 @@ node_modules/
 ~$*.xlsx
 /.playwright-mcp/
 /test-data.txt
+/evidencias/

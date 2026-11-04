@@ -1,14 +1,11 @@
 import {Page,Locator, FrameLocator} from "playwright/test";
 import BasePage from './basePage';
-import {Login} from './loginPage';
 import { expect } from "@playwright/test";
 import path from "path";
 import { leerCarreras } from "../utils/leerExcel";
 import { getTestDataFile } from "../utils/config";
-import { Console } from "console";
 
 export class ValidaCarreras extends BasePage{
-    private readonly loginPage: Login;
     readonly page:Page;
     readonly resultadosTittle1: Locator;
     readonly resultadosTittle2: Locator;
@@ -27,13 +24,11 @@ export class ValidaCarreras extends BasePage{
     constructor(page:Page){
         super(page)
         this.page=page;
-        this.loginPage = new Login(page);
-
         this.resultadosTittle1 = page.locator("h2", { hasText: "PERSONALIDAD" });
         this.resultadosTittle2 = page.locator("h2", { hasText: "FORTALEZA" });
         this.resultadosTittle3 = page.locator("h2", { hasText: "DESAFÍOS" });
         this.resultadosTittle4 = page.locator("h2", { hasText: "DONDE BRILLARÁS" });
-        this.siguienteButton = page.locator('button.carousel-button.right');
+        this.siguienteButton = page.locator('button.carousel-button.right:visible').first();
         this.continuarButton = page.getByRole("button",{name:"Quiero saber más"});
         this.resultadosTittle5 = page.locator("h1", { hasText: "Conoce las carreras más compatibles contigo" });
         this.saberButton = page.getByRole("button",{name:"Quiero saber mis resultados"});
@@ -44,23 +39,21 @@ export class ValidaCarreras extends BasePage{
         this.opcionAsesoriaSi = this.page.locator('label').filter({ hasText: '¡Sí! Quiero recibir asesoría' }).first();
     }
 
-    async iniciarSesion(docNumber:string,celular:string){
-        this.loginPage.navigate();
-        this.loginPage.iniciarButtonP();
-        this.loginPage.ingresarDocumento(docNumber);
-        this.loginPage.ingresarCelular(celular);
-        this.loginPage.continuarButtonP();
-        this.loginPage.validarInicio();
+    // Títulos de las carreras compatibles que muestra el resultado del TOV (espera a que carguen las tarjetas)
+    async obtenerCarrerasCompatibles(): Promise<string[]> {
+        await this.page.locator('li.carousel-item h2').first().waitFor({ state: 'visible', timeout: 15000 });
+        const titulos = await this.page.locator('li.carousel-item h2').allTextContents();
+        return titulos.map(t => t.trim());
     }
 
     async visualizarResultados(grado:string){
         if(grado=="1"){
             await this.waitForElementVisible(this.resultadosTittle1);
-            await this.siguienteButton.nth(1).click();
+            await this.siguienteButton.click();
             await this.waitForElementVisible(this.resultadosTittle2);
-            await this.siguienteButton.nth(1).click();
+            await this.siguienteButton.click();
             await this.waitForElementVisible(this.resultadosTittle3);
-            await this.siguienteButton.nth(1).click();
+            await this.siguienteButton.click();
             await this.waitForElementVisible(this.resultadosTittle4);
             await this.clickElement(this.continuarButton);
             await this.waitForElementVisible(this.resultadosTittle5);
@@ -76,7 +69,8 @@ export class ValidaCarreras extends BasePage{
         }
     }
 
-    async verCarreras(dni:string){
+    // rutaCaptura(n, titulo): ruta donde guardar la captura de cada tarjeta (la define quien llama)
+    async verCarreras(rutaCaptura: (n: number, titulo: string) => string){
         console.log("🚀 Validando carreras...");
 
         await this.waitForElementVisible(this.carrerasTittle);
@@ -92,13 +86,7 @@ export class ValidaCarreras extends BasePage{
             c.titulo.trim().toLowerCase()
         );
 
-        const titulosUIRaw = await this.page
-            .locator('li.carousel-item h2')
-            .allTextContents();
-
-        const titulosUI = titulosUIRaw.map(t =>
-            t.trim().toLowerCase()
-        );
+        const titulosUI = (await this.obtenerCarrerasCompatibles()).map(t => t.toLowerCase());
 
         console.log("🖥️ UI:", titulosUI);
         console.log("📄 Excel:", titulosExcel);
@@ -126,7 +114,7 @@ export class ValidaCarreras extends BasePage{
             console.log(`🖥️ Carrera ${i + 1}: ${titulo}`);
 
             await card.screenshot({
-                path: `screenshots/${dni}/Carreras/${i + 1}-${titulo}.png`
+                path: rutaCaptura(i + 1, titulo)
             });
 
             const boton = card.locator('img[alt="dislike"]');

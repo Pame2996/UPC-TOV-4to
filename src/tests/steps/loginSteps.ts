@@ -1,22 +1,10 @@
-import {Given,When,Then} from '@cucumber/cucumber';
-import {chromium,Browser,Page,expect} from '@playwright/test';
+import {Given,When} from '@cucumber/cucumber';
 import {pageFixture} from '../../hooks/pageFixture';
+import {CustomWorld} from '../../hooks/world';
+import {getTestDocumentType, getEnvName, AMBIENTE_POR_DEFECTO} from '../utils/config';
 import {Login} from '../pages/loginPage';
-import {RealizaTOVBigFive} from '../pages/realizarTOVBigFivePage';
-import {RealizaTOVRiasec} from '../pages/realizarTOVRiasecPage';
-import {RealizaTOVVocare} from '../pages/realizarTOVVocarePage';
-import { ValidaCarreras } from '../pages/validarCarrerasPage';
 
-let browser : Browser;
 let loginPage:Login;
-let page: Page;
-let realizarTOVPage: RealizaTOVBigFive;
-let realizarTOVPage2: RealizaTOVRiasec;
-let realizarTOVPage3: RealizaTOVVocare;
-let verResultados: ValidaCarreras;
-
-let dni: string;
-let seccion: string;
 
 Given('el usuario se encuentra en la página de inicio',async function(){
     loginPage = new Login(pageFixture.page);
@@ -27,47 +15,23 @@ When('ingresa a la opcion Ya tengo cuenta',async function(){
     await loginPage.iniciarButtonP();
 });
 
-When('ingresa el DNI {string} de la seccion {string} con tipo de documento {string}',async function(dniParam:string, seccionParam:string, tipoDocumento:string){
-    dni = dniParam;
-    seccion = seccionParam;
+When('ingresa el DNI {string} de la seccion {string} con tipo de documento {string}',async function(this: CustomWorld, dniExample:string, seccion:string, tipoExample:string){
+    // TEST_DNI y TEST_TIPO_DOC, si están definidos, mandan sobre los valores del Examples
+    const dni = (process.env.TEST_DNI || "").trim() || dniExample;
+    const tipoDocumento = getTestDocumentType(tipoExample);
+    // Los steps del TOV (tovSteps) leen estos valores del World
+    this.esQuinto = seccion === '5to';
+    this.evidencias.fijar('ambiente', getEnvName(AMBIENTE_POR_DEFECTO.login));
+    this.evidencias.fijar('documento', dni);
+    this.evidencias.fijar('grado', seccion);
     await loginPage.seleccionarTipo(tipoDocumento);
     await loginPage.ingresarDocumento(dni);
 });
 
 When('ingresa el número de celular',async function(){
-    await loginPage.ingresarCelular("900999999")
+    await loginPage.ingresarCelular("900999999");
 });
 
 When('da clic en Continuar',async function(){
     await loginPage.continuarButtonP();
-});
-
-Then('inicia el test de personalidad',async function(){
-    realizarTOVPage = new RealizaTOVBigFive(pageFixture.page);
-    await realizarTOVPage.iniciarTest();
-    if (seccion === '5to') {
-        await realizarTOVPage.responderPersonalidad(dni);
-    }
-});
-
-Then('responde el test de Riasec',async function(){
-    realizarTOVPage2 = new RealizaTOVRiasec(pageFixture.page);
-    await realizarTOVPage2.responderIntereses(dni);
-});
-
-Then('responde el test de Vocare',async function(){
-    realizarTOVPage3 = new RealizaTOVVocare(pageFixture.page);
-    await realizarTOVPage3.responderHabilidades(dni);
-});
-
-Then('visualiza y valida los resultados de carreras',async function(){
-    verResultados = new ValidaCarreras(pageFixture.page);
-    let grado: string;
-    if (seccion === '5to') {
-        grado = '1'; // Quinto
-    } else {
-        grado = '2'; // Cuarto
-    }
-    await verResultados.visualizarResultados(grado);
-    await verResultados.verCarreras(dni);
 });

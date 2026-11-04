@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
+import { getTestDocument, getTestDocumentType } from "./config";
 
 export const FIRST_NAMES = [
-    "Prueba"
+    "Pruéba"
 ];
 
 export const SURNAMES = [
@@ -41,7 +42,7 @@ export function appendTestData(texto: string) {
     fs.appendFileSync(filePath, texto + "\n");
 }
 
-export function generateUserData(): UserData {
+export function generateUserData(tipoDocumento: string = "DNI"): UserData {
     const random = Math.floor(Math.random() * 90000000 + 10000000);
 
     const data: UserData = {
@@ -51,8 +52,8 @@ export function generateUserData(): UserData {
         fechaNacimiento: randomFechaNacimiento(),
         celular: "9" + Math.floor(Math.random() * 90000000 + 10000000),
         correo: `test_${random}@mail.com`,
-        tipoDocumento: "DNI",
-        numeroDocumento: random.toString(),
+        tipoDocumento: getTestDocumentType(tipoDocumento),
+        numeroDocumento: getTestDocument(),
     };
     saveToTxt(data);
     return data;
