@@ -2,7 +2,7 @@ import {Page,Locator} from "playwright/test";
 import BasePage from './basePage';
 import { expect } from "@playwright/test";
 import { UserData } from "../utils/dataGenerator";
-import { getBaseUrl } from "../utils/config";
+import { getBaseUrl, AMBIENTE_POR_DEFECTO } from "../utils/config";
 
 export class Registrate extends BasePage{
     readonly page:Page;
@@ -41,7 +41,7 @@ export class Registrate extends BasePage{
     }
 
     async navigate(){
-        await this.page.goto(`${getBaseUrl('cert')}/`, {
+        await this.page.goto(`${getBaseUrl(AMBIENTE_POR_DEFECTO.registro)}/`, {
             waitUntil: "domcontentloaded"
         });
     }

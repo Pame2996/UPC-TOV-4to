@@ -2,7 +2,7 @@ import {Page,Locator} from "playwright/test";
 import BasePage from './basePage';
 import { expect } from "@playwright/test";
 import { UserData, ApoderadoData } from "../utils/dataGenerator";
-import { getBaseUrl } from "../utils/config";
+import { getBaseUrl, AMBIENTE_POR_DEFECTO } from "../utils/config";
 
 export class FichaFisica extends BasePage{
     readonly page:Page;
@@ -47,7 +47,7 @@ export class FichaFisica extends BasePage{
     }
 
     async navigate(){
-        await this.page.goto(`${getBaseUrl('cert')}/registro-ficha-fisica`, {
+        await this.page.goto(`${getBaseUrl(AMBIENTE_POR_DEFECTO.fichaFisica)}/registro-ficha-fisica`, {
             waitUntil: "domcontentloaded"
         });
     }
@@ -107,12 +107,8 @@ export class FichaFisica extends BasePage{
     }
 
     async registrarYGuardar(){
-        const dir = "./test-result/screenshots/ficha-fisica";
-        const timestamp = Date.now();
-        await this.takeScreenshot(`${dir}/antes-de-registrar_${timestamp}.png`);
         await this.clickElement(this.submitButton);
         await this.waitForElementVisible(this.successHeading);
-        await this.takeScreenshot(`${dir}/despues-de-registrar_${timestamp}.png`);
     }
 
     async validarRegistroExitoso(){

@@ -24,7 +24,9 @@ export class RegistroMasTov extends BasePage{
         this.secondCareerInput = page.locator('#secondCareer');
         this.continuarButtons = page.getByRole('button', { name: 'Continuar', exact: true });
         this.noLoTengoDecididoButton = page.getByRole('button', { name: 'No lo tengo decidido' });
-        this.comenzarRutaButton = page.getByRole('button', { name: '¡Comenzar!', exact: true });
+        // Botón de la card "Conócete" en tu-ruta. El sitio lo cambió de "¡Comenzar!" a "Comenzar";
+        // se aceptan ambos mientras los ambientes terminan de actualizarse (la card Explora dice "Ingresar").
+        this.comenzarRutaButton = page.getByRole('button', { name: /^¡?Comenzar!?$/ });
         this.comenzarAventuraButton = page.getByRole('button', { name: '¡Comenzar la aventura!' });
         this.excelenteButton = page.getByRole('button', { name: '¡Excelente!' });
         this.preguntaAbiertaInput = page.getByRole('textbox');
@@ -130,6 +132,34 @@ export class RegistroMasTov extends BasePage{
         await this.seleccionarTarjeta(opcion);
         await this.clickContinuar();
         return true;
+    }
+
+    // Avanza por las pantallas intermedias que el sitio muestre (valoras / financiamiento) hasta llegar a /tu-ruta.
+    // El orden y la presencia de esas pantallas varía según la opción elegida, por eso se resuelve por URL.
+    async llegarATuRuta(valora: string, financiamiento: string): Promise<{valora: boolean; financiamiento: boolean}> {
+        const aplico = {valora: false, financiamiento: false};
+        const limite = Date.now() + 60000;
+        while (Date.now() < limite && !this.page.url().includes('/tu-ruta')) {
+            if (await this.seleccionarValoras(valora)) aplico.valora = true;
+            else if (await this.seleccionarFinanciamiento(financiamiento)) aplico.financiamiento = true;
+            else await this.page.waitForTimeout(300);
+        }
+        if (!this.page.url().includes('/tu-ruta')) {
+            throw new Error(`No se llegó a Tu ruta; URL actual: ${this.page.url()}`);
+        }
+        return aplico;
+    }
+
+    // En Tu ruta (egresado sin TOV) solo debe verse la card de Explora y debajo la card de Inscríbete;
+    // la card de Conócete (con su botón "Comenzar") no debe mostrarse
+    async validarSinCardConocete(){
+        const exploraIngresar = this.page.getByRole('button', { name: 'Ingresar', exact: true });
+        await this.waitForElementVisible(exploraIngresar);
+        await this.waitForElementVisible(this.page.getByText(/Inscr[ií]bete/i).first());
+        const tituloConocete = this.page.getByText(/^Conócete$/i);
+        if (await tituloConocete.count() > 0 || await this.comenzarRutaButton.count() > 0) {
+            throw new Error('La card de Conócete se muestra en Tu ruta y no debería (egresado sin TOV)');
+        }
     }
 
     async iniciarAventura(){

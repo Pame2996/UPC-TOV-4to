@@ -33,7 +33,7 @@ export default class BasePage{
         }
     }
 
-    async waitForElementHidden(element: Locator) {
+    async waitForElementHidden(element: Locator | string) {
         if (typeof element === 'string') {
             await this.page.waitForSelector(element, { state: 'hidden' });
         } else {

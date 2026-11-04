@@ -1,14 +1,11 @@
 import {Page,Locator, FrameLocator} from "playwright/test";
 import BasePage from './basePage';
-import {Registrate} from './registratePage';
 import { expect } from "@playwright/test";
-import {PREGUNTAS_PERSONALIDAD} from "../utils/dataPreguntas";
 import path from "path";
 import { leerPreguntasConOpcion } from "../utils/leerExcel";
 import { getTestDataFile } from "../utils/config";
 
 export class RealizaTOVBigFive extends BasePage{
-    private readonly registratePage: Registrate;
     readonly page:Page;
     readonly opciones: Locator;
     readonly autoconocimiento: Locator;
@@ -18,12 +15,10 @@ export class RealizaTOVBigFive extends BasePage{
     constructor(page:Page){
         super(page)
         this.page=page;
-        this.registratePage = new Registrate(page);
         this.personalidadTittle = page.locator("p", { hasText: "Lee cada situación y marca cuánto se parece a ti en tu vida diaria" });
         this.opciones = this.page.getByRole('button');
         this.autoconocimiento = page.getByRole("button", { name: "¡Comenzar el test!" });
         this.continuarModal= page.getByRole('button', { name: 'Continuar', exact: true });
-        PREGUNTAS_PERSONALIDAD.map(p => this.normalizarTexto(p));
     }
 
     async iniciarTest(){
@@ -31,11 +26,15 @@ export class RealizaTOVBigFive extends BasePage{
         await this.clickElement(this.autoconocimiento);
     }
 
+    async validarPantallaInicioTest(){
+        await this.waitForElementVisible(this.autoconocimiento);
+    }
+
     async visualizarPersonalidad(){
         await this.waitForElementVisible(this.personalidadTittle);
     }
 
-    async responderPersonalidad(dni:string){
+    async responderPersonalidad(){
         const filePath = path.resolve(process.cwd(), "src/tests/data", getTestDataFile());
         const filasExcel = leerPreguntasConOpcion({
             filePath,
@@ -91,18 +90,12 @@ export class RealizaTOVBigFive extends BasePage{
             // Filtra el botón asegurando que sea el que contiene la opción exacta y está dentro del área visible
             const labelASeleccionar = this.page.getByRole('button', { name: match.opcionUI });
 
-            try {
-                console.log(preguntaNorm, "|", match.opcionUI);
-                await expect(labelASeleccionar).toBeVisible();
-                await labelASeleccionar.click(); // Intenta usar el click directo antes de tu clickElement
-                // Espera a que la selección se refleje (ej: el botón cambia de color)
-                // Esto ayuda a que el DOM se "estabilice" antes de la siguiente vuelta
-                await this.page.waitForTimeout(1000); 
-            } catch (error: any) {
-                // Corrección del log para que muestre el índice i actual
-                console.error(`❌ Error en pregunta ${i}:`, error.message);
-                await this.page.screenshot({ path: `./test-result/screenshots/ERROR_P${i}.png` });
-            }
+            console.log(preguntaNorm, "|", match.opcionUI);
+            // Sin try/catch: si falla una pregunta el caso debe fallar (el hook After guarda la captura)
+            await expect(labelASeleccionar).toBeVisible();
+            await labelASeleccionar.click();
+            // Espera a que la selección se refleje antes de la siguiente vuelta
+            await this.page.waitForTimeout(1000);
             if(i===25){
                 console.log("ENTRÉ AL i=25");
                 await this.waitForElementVisible(this.continuarModal);

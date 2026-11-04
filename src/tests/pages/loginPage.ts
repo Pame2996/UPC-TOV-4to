@@ -1,7 +1,7 @@
 import {Page,Locator, FrameLocator} from "playwright/test";
 import BasePage from './basePage';
 import { expect } from "@playwright/test";
-import { getBaseUrl } from "../utils/config";
+import { getBaseUrl, AMBIENTE_POR_DEFECTO } from "../utils/config";
 
 export class Login extends BasePage{
     readonly page:Page;
@@ -26,7 +26,7 @@ export class Login extends BasePage{
     }
 
     async navigate(){
-        await this.page.goto(`${getBaseUrl('dev')}/`, {
+        await this.page.goto(`${getBaseUrl(AMBIENTE_POR_DEFECTO.login)}/`, {
             waitUntil: "domcontentloaded"
         });
 

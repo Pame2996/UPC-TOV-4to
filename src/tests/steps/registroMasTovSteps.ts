@@ -1,15 +1,10 @@
-import {When,Then} from '@cucumber/cucumber';
+import {When} from '@cucumber/cucumber';
 import {pageFixture} from '../../hooks/pageFixture';
 import {RegistroMasTov} from '../pages/registroMasTovPage';
-import {RealizaTOVBigFive} from '../pages/realizarTOVBigFivePage';
-import {RealizaTOVRiasec} from '../pages/realizarTOVRiasecPage';
-import {RealizaTOVVocare} from '../pages/realizarTOVVocarePage';
-import {ValidaCarreras} from '../pages/validarCarrerasPage';
 import { appendTestData } from "../utils/dataGenerator";
+import {CustomWorld} from '../../hooks/world';
 
 let registroMasTovPage: RegistroMasTov;
-let esQuinto: boolean;
-let screenshotId: string;
 
 When('el usuario selecciona sus carreras de interés {string} y {string}', async function (primera: string, segunda: string) {
     registroMasTovPage = new RegistroMasTov(pageFixture.page);
@@ -60,35 +55,8 @@ When('el usuario responde las preguntas de autoconocimiento', async function () 
     );
 });
 
-When('el usuario finaliza la sección de autoconocimiento', async function () {
+When('el usuario finaliza la sección de autoconocimiento', async function (this: CustomWorld) {
     await registroMasTovPage.finalizarAutoconocimiento();
-});
-
-Then('inicia el test de personalidad', async function () {
-    esQuinto = registroMasTovPage.esQuinto();
-    screenshotId = `registro_${Date.now()}`;
-    const realizarTOVPage = new RealizaTOVBigFive(pageFixture.page);
-    await realizarTOVPage.iniciarTest();
-    if (esQuinto) {
-        await realizarTOVPage.responderPersonalidad(screenshotId);
-    }
-});
-
-Then('responde el test de Riasec', async function () {
-    const realizarTOVPage2 = new RealizaTOVRiasec(pageFixture.page);
-    await realizarTOVPage2.responderIntereses(screenshotId);
-});
-
-Then('responde el test de Vocare', async function () {
-    const realizarTOVPage3 = new RealizaTOVVocare(pageFixture.page);
-    await realizarTOVPage3.responderHabilidades(screenshotId);
-});
-
-Then('visualiza y valida los resultados de carreras', async function () {
-    const verResultados = new ValidaCarreras(pageFixture.page);
-    const grado = esQuinto ? '1' : '2';
-    await verResultados.visualizarResultados(grado);
-    const carreras = await pageFixture.page.locator('li.carousel-item h2').allTextContents();
-    appendTestData(`Carreras compatibles (resultado TOV): ${carreras.map(c => c.trim()).join(', ')}`);
-    await verResultados.verCarreras(screenshotId);
+    // finalizarAutoconocimiento espera el cambio de URL a /quinto o /cuarto; los steps del TOV leen este valor
+    this.esQuinto = registroMasTovPage.esQuinto();
 });

@@ -1,13 +1,11 @@
 import {Page,Locator, FrameLocator} from "playwright/test";
 import BasePage from './basePage';
-import {Login} from './loginPage';
 import { expect } from "@playwright/test";
 import path from "path";
 import { leerPreguntasConOpcion } from "../utils/leerExcel";
 import { getTestDataFile } from "../utils/config";
 
 export class RealizaTOVRiasec extends BasePage{
-    private readonly loginPage: Login;
     readonly page:Page;
     readonly opciones: Locator;
     readonly interesesTittle: Locator;
@@ -16,7 +14,6 @@ export class RealizaTOVRiasec extends BasePage{
     constructor(page:Page){
         super(page)
         this.page=page;
-        this.loginPage = new Login(page);
         this.opciones = this.page.getByRole('button');
         this.interesesTittle = page.locator("h2", { hasText: "¿Cuánto te agrada?..." });
         this.continuarModal= page.getByRole('button', { name: 'Continuar', exact: true });
@@ -26,7 +23,7 @@ export class RealizaTOVRiasec extends BasePage{
         await this.waitForElementVisible(this.interesesTittle);
     }
 
-    async responderIntereses(dni:string){
+    async responderIntereses(){
         await this.page.waitForTimeout(2000);
         const filePath = path.resolve(process.cwd(), "src/tests/data", getTestDataFile());
         const filasExcel = leerPreguntasConOpcion({
@@ -85,22 +82,16 @@ export class RealizaTOVRiasec extends BasePage{
             // Filtra el botón asegurando que sea el que contiene la opción exacta y está dentro del área visible
             const labelASeleccionar = this.page.getByRole('button', { name: match.opcionUI });
 
-            try {
-                console.log(preguntaNorm," | ", match.opcionUI);
-                await expect(labelASeleccionar).toBeVisible();
-                await labelASeleccionar.click(); // Intenta usar el click directo antes de tu clickElement
-                // Espera a que la selección se refleje (ej: el botón cambia de color)
-                // Esto ayuda a que el DOM se "estabilice" antes de la siguiente vuelta
-                await this.page.waitForTimeout(1000); 
-            } catch (error: any) {
-                // Corrección del log para que muestre el índice i actual
-                console.error(`❌ Error en pregunta ${i}:`, error.message);
-                await this.page.screenshot({ path: `./test-result/screenshots/ERROR_P${i}.png` });
-            }
+            console.log(preguntaNorm," | ", match.opcionUI);
+            // Sin try/catch: si falla una pregunta el caso debe fallar (el hook After guarda la captura)
+            await expect(labelASeleccionar).toBeVisible();
+            await labelASeleccionar.click();
+            // Espera a que la selección se refleje antes de la siguiente vuelta
+            await this.page.waitForTimeout(1000);
             if(i===45){
                 console.log("ENTRÉ AL i=45");
                 await this.waitForElementVisible(this.continuarModal);
-                this.clickElement(this.continuarModal);
+                await this.clickElement(this.continuarModal);
             }
         }
         
