@@ -15,7 +15,7 @@ And visualiza y valida los resultados de carreras
   @4to
   Examples:
     | seccion | dni      | tipoDocumento |
-    | 4to     | 09082601 | Pasaporte     |
+    | 4to     | 23092610 | DNI           |
 
   @5to
   Examples:

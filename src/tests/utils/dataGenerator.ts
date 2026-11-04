@@ -49,10 +49,10 @@ export function generateUserData(): UserData {
         primerApellido: randomFrom(SURNAMES),
         segundoApellido: randomFrom(SURNAMES),
         fechaNacimiento: randomFechaNacimiento(),
-        celular: "9" + Math.floor(Math.random() * 90000000 + 10000000),
+        celular: process.env.TEST_CELULAR || ("9" + Math.floor(Math.random() * 90000000 + 10000000)),
         correo: `test_${random}@mail.com`,
         tipoDocumento: "DNI",
-        numeroDocumento: random.toString(),
+        numeroDocumento: process.env.TEST_DNI || random.toString(),
     };
     saveToTxt(data);
     return data;

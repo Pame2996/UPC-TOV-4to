@@ -11,7 +11,7 @@ And el usuario selecciona la opción "<dondeEstasTuOpcion>" en la pantalla Dónd
 And el usuario da clic en Continuar
 And el usuario ingresa sus datos personales con tipo de documento "<tipoDocumento>"
 And el usuario da clic en Continuar
-And el usuario selecciona sus carreras de interés "Ingeniería de Software" y "Administración"
+And el usuario selecciona sus carreras de interés "<carrera1>" y "<carrera2>"
 And el usuario selecciona dónde quiere estudiar "Lima"
 And el usuario selecciona la modalidad de estudio "Presencial"
 And el usuario omite la selección de universidad
@@ -28,15 +28,15 @@ And visualiza y valida los resultados de carreras
 
   @4to
   Examples:
-    | colegio | grado                        | dondeEstasTuOpcion | tipoDocumento |
-    | 0340414 | Grado 10 o 4to de secundaria | 1                   | DNI           |
+    | colegio | grado                        | dondeEstasTuOpcion | tipoDocumento | carrera1               | carrera2               |
+    | 0340414 | Grado 10 o 4to de secundaria | 1                   | DNI           | Ingeniería de Software | Administración         |
 
   @5to
   Examples:
-    | colegio | grado                        | dondeEstasTuOpcion | tipoDocumento |
-    | 0340414 | Grado 11 o 5to de secundaria | 1                   | DNI           |
+    | colegio | grado                        | dondeEstasTuOpcion | tipoDocumento | carrera1               | carrera2               |
+    | 0340414 | Grado 11 o 5to de secundaria | 1                   | DNI           | Medicina               | Enfermería             |
 
   @egresado
   Examples:
-    | colegio | grado                  | dondeEstasTuOpcion | tipoDocumento |
-    | 0340414 | Ya terminé el colegio  | 1                   | DNI           |
+    | colegio | grado                  | dondeEstasTuOpcion | tipoDocumento | carrera1               | carrera2               |
+    | 0340414 | Ya terminé el colegio  | 1                   | DNI           | Ingeniería de Software | Administración         |

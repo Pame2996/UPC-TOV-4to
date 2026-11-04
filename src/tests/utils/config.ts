@@ -18,5 +18,5 @@ export function getBaseUrl(defaultEnv: string): string {
 }
 
 export function getTestDataFile(): string {
-    return process.env.TEST_DATA_FILE || "Carreras_1.xlsx";
+    return process.env.TEST_DATA_FILE || "Carreras_20.xlsx";
 }

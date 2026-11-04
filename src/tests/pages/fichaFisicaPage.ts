@@ -76,12 +76,32 @@ export class FichaFisica extends BasePage{
 
     async selectCareer(carrera: string){
         await this.clickElement(this.careerInput);
+        // Campo de selección múltiple: NO se vacía con fill('') porque eso quita la carrera ya elegida.
+        // Si aún muestra el texto de la carrera anterior, se selecciona para escribir encima.
+        const textoActual = await this.careerInput.inputValue().catch(() => '');
+        if (textoActual) await this.careerInput.press('Control+A');
         // Una coincidencia exacta oculta la lista de opciones; se escribe un prefijo para forzar que aparezca
         const prefijo = carrera.length > 4 ? carrera.slice(0, carrera.length - 2) : carrera;
         await this.careerInput.pressSequentially(prefijo, { delay: 20 });
-        const opcion = this.page.getByRole('listitem').filter({ hasText: carrera }).first();
-        await this.waitForElementVisible(opcion);
+        // Se prioriza la opción con el nombre exacto (ej. "Administración" y no "Administración y Marketing")
+        const escapada = carrera.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const exacta = this.page.getByRole('listitem').filter({ hasText: new RegExp(`^\\s*${escapada}\\s*$`, 'i') }).first();
+        const parcial = this.page.getByRole('listitem').filter({ hasText: carrera }).first();
+        await this.waitForElementVisible(parcial);
+        const opcion = (await exacta.count()) > 0 ? exacta : parcial;
         await this.clickElement(opcion);
+        // Se sale del campo (clic en el título de la sección) para que la etiqueta quede fija
+        await this.page.getByText(/carreras de preferencia/i).first().click();
+        await this.page.waitForTimeout(700);
+    }
+
+    // Verifica que cada carrera quede como etiqueta debajo del campo
+    async validarCarrerasSeleccionadas(carreras: string[]){
+        for (const carrera of carreras) {
+            const escapada = carrera.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const etiqueta = this.page.getByText(new RegExp(`^\\s*${escapada}\\s*$`, 'i')).first();
+            await expect(etiqueta, `No quedó seleccionada la carrera "${carrera}"`).toBeVisible({ timeout: 5000 });
+        }
     }
 
     async enterDatosPrincipales(datos: UserData, colegio: string, grado: string){

@@ -1,5 +1,6 @@
 import {Page,Locator} from "playwright/test";
 import BasePage from './basePage';
+import { guardarEvidencia } from "../../helper/evidencias";
 
 function escapeRegExp(texto: string): string {
     return texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -24,7 +25,8 @@ export class RegistroMasTov extends BasePage{
         this.secondCareerInput = page.locator('#secondCareer');
         this.continuarButtons = page.getByRole('button', { name: 'Continuar', exact: true });
         this.noLoTengoDecididoButton = page.getByRole('button', { name: 'No lo tengo decidido' });
-        this.comenzarRutaButton = page.getByRole('button', { name: '¡Comenzar!', exact: true });
+        // El botón de Tu Ruta ahora es "Comenzar"; se aceptan "Comenzar" y "¡Comenzar!"
+        this.comenzarRutaButton = page.getByRole('button', { name: /^\s*¡?\s*Comenzar\s*!?\s*$/i });
         this.comenzarAventuraButton = page.getByRole('button', { name: '¡Comenzar la aventura!' });
         this.excelenteButton = page.getByRole('button', { name: '¡Excelente!' });
         this.preguntaAbiertaInput = page.getByRole('textbox');
@@ -56,6 +58,9 @@ export class RegistroMasTov extends BasePage{
     async seleccionarCarreras(primera: string, segunda: string){
         await this.seleccionarCarrera(this.firstCareerInput, primera);
         await this.seleccionarCarrera(this.secondCareerInput, segunda);
+        // Evidencia: evidencias/<DNI>/<DNI>_seleccion-carreras.png
+        await this.page.waitForTimeout(500);
+        await guardarEvidencia(this.page, "seleccion-carreras");
         await this.clickContinuar();
     }
 

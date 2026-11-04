@@ -30,7 +30,9 @@ export class Login extends BasePage{
             waitUntil: "domcontentloaded"
         });
 
-        await this.page.waitForLoadState("networkidle");
+        // En prod la página nunca queda en "networkidle" (analítica/píxeles siguen enviando
+        // peticiones), así que esperamos a que el botón "Ya tengo cuenta" esté visible.
+        await this.inicioButton.waitFor({ state: "visible", timeout: 30000 });
     }
 
     async iniciarButtonP(){

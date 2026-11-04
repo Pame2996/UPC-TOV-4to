@@ -32,7 +32,7 @@ on:
         description: "Archivo Excel de datos/respuestas (TEST_DATA_FILE)"
         required: false
         type: string
-        default: "Carreras_1.xlsx"
+        default: "Carreras_20.xlsx"
 
 jobs:
   ejecutar-pruebas:

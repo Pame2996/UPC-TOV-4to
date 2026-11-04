@@ -2,6 +2,7 @@ import { BeforeAll, Before, After, AfterStep, AfterAll, Status, ITestCaseHookPar
 import { chromium, webkit , Browser, BrowserContext, Page } from "@playwright/test";
 import { pageFixture } from './pageFixture';
 import fs from "fs";
+import { guardarEvidencia, pantallaDesdeUrl } from "../helper/evidencias";
 
 let browser: Browser;
 let context: BrowserContext;
@@ -37,31 +38,16 @@ Before(async function () {
 
 After(async function (this: any, { pickle, result }: ITestCaseHookParameter) {
   if (result?.status === Status.FAILED) {
-    const image = await pageFixture.page.screenshot({ path: './test-result/screenshots/${pickle.name}.png', type: "png" });
+    const image = await guardarEvidencia(pageFixture.page, `ERROR_${pantallaDesdeUrl(pageFixture.page.url())}`);
     await this.attach(image, "image/png");
   }
-  //await page.close();
-  //await context.close();
-  //await page.pause();
 });
 
+// Una captura por paso en evidencias/<DNI>/<DNI>_<Pantalla>.png (también se adjunta al reporte)
 AfterStep(async function (this: any, { pickle, result }: ITestCaseHookParameter){
-    await page.waitForLoadState("domcontentloaded");
-    const screenshotDir = "./test-result/screenshots";
-      if (!fs.existsSync(screenshotDir)) {
-        fs.mkdirSync(screenshotDir, { recursive: true });
-      }
-
-      const timestamp = Date.now();
-      const stepName = pickle.name.replace(/\s+/g, "_");
-
-      const image = await pageFixture.page.screenshot({
-        path: `${screenshotDir}/${stepName}_${timestamp}.png`,
-        type: "png",
-        fullPage: true
-      });
-
-      await this.attach(image, "image/png");
+    await pageFixture.page.waitForLoadState("domcontentloaded");
+    const image = await guardarEvidencia(pageFixture.page, pantallaDesdeUrl(pageFixture.page.url()));
+    await this.attach(image, "image/png");
 });
 
 AfterAll(async function () {
